@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url:      jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  flyway:
+    enabled: false    # H2 in-memory; Flyway disabled for pure unit tests
+
+app:
+  encryption:
+    key: TestEncryptionKey32CharsLong!
+  email:
+    from: noreply@test.co.za
+    from-name: Test System
+  cors:
+    allowed-origins: http://localhost:3000

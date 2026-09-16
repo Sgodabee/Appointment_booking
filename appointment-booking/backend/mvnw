@@ -1,0 +1,31 @@
+#!/bin/sh
+# Maven Wrapper script — downloads Maven if not already present
+set -e
+
+MAVEN_WRAPPER_JAR=".mvn/wrapper/maven-wrapper.jar"
+MAVEN_WRAPPER_PROPERTIES=".mvn/wrapper/maven-wrapper.properties"
+
+# Extract distribution URL
+DISTRIBUTION_URL=$(grep distributionUrl "$MAVEN_WRAPPER_PROPERTIES" | sed 's/distributionUrl=//')
+
+MAVEN_USER_HOME="${MAVEN_USER_HOME:-$HOME/.m2}"
+MAVEN_HOME="$MAVEN_USER_HOME/wrapper/dists/$(basename $DISTRIBUTION_URL .zip)"
+
+if [ ! -d "$MAVEN_HOME" ]; then
+    mkdir -p "$MAVEN_USER_HOME/wrapper/dists"
+    echo "Downloading Maven from $DISTRIBUTION_URL ..."
+    cd "$MAVEN_USER_HOME/wrapper/dists"
+    wget -q "$DISTRIBUTION_URL" -O maven.zip
+    unzip -q maven.zip
+    rm maven.zip
+    cd - > /dev/null
+fi
+
+# Find the mvn executable
+MVN_EXEC=$(find "$MAVEN_USER_HOME/wrapper/dists" -name "mvn" -type f 2>/dev/null | head -1)
+if [ -z "$MVN_EXEC" ]; then
+    # Fallback: use system Maven if wrapper failed
+    MVN_EXEC=$(which mvn 2>/dev/null || echo "mvn")
+fi
+
+exec "$MVN_EXEC" "$@"

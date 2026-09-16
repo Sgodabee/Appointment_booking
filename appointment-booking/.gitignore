@@ -1,0 +1,28 @@
+# Environment files — never commit real secrets
+.env
+backend/.env
+frontend/.env
+
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Build outputs
+frontend/dist/
+backend/dist/
+
+# Logs
+logs/
+*/logs/
+*.log
+
+# Test coverage
+coverage/
+*/coverage/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

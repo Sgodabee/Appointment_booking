@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Appointment Cancelled</title>
+</head>
+<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6f9;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0"
+               style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:#c0392b;padding:32px 40px;text-align:center;">
+              <div style="font-size:40px;margin-bottom:12px;">❌</div>
+              <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">
+                Appointment Cancelled
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:40px;">
+              <p style="color:#333;font-size:16px;margin:0 0 12px;">
+                Dear <strong th:text="${customerName}">Customer</strong>,
+              </p>
+              <p style="color:#555;font-size:15px;margin:0 0 28px;line-height:1.6;">
+                Your appointment has been <strong style="color:#c0392b;">cancelled</strong>.
+                Please see the details of the cancelled appointment below.
+              </p>
+
+              <!-- Appointment summary -->
+              <table width="100%" cellpadding="0" cellspacing="0"
+                     style="background:#fdf2f2;border-radius:6px;padding:24px;margin-bottom:28px;border:1px solid #f5c6cb;">
+                <tr>
+                  <td style="padding:6px 0;">
+                    <span style="color:#666;font-size:13px;display:block;">Reference Number</span>
+                    <strong style="color:#c0392b;font-size:20px;" th:text="${referenceNumber}">APB-XXXXXXXX-XXXX</strong>
+                  </td>
+                </tr>
+                <tr><td style="padding:8px 0;border-top:1px solid #f5c6cb;">
+                  <span style="color:#666;font-size:13px;">Branch</span>
+                  <p style="margin:4px 0 0;color:#333;font-weight:600;" th:text="${branchName}">Branch</p>
+                </td></tr>
+                <tr><td style="padding:8px 0;border-top:1px solid #f5c6cb;">
+                  <span style="color:#666;font-size:13px;">Service</span>
+                  <p style="margin:4px 0 0;color:#333;" th:text="${serviceType}">Service</p>
+                </td></tr>
+                <tr><td style="padding:8px 0;border-top:1px solid #f5c6cb;">
+                  <span style="color:#666;font-size:13px;">Date &amp; Time</span>
+                  <p style="margin:4px 0 0;color:#333;">
+                    <span th:text="${date}">Date</span> at <span th:text="${time}">Time</span>
+                  </p>
+                </td></tr>
+              </table>
+
+              <p style="color:#555;font-size:14px;margin:0 0 12px;line-height:1.6;">
+                If this cancellation was unexpected or made in error, please contact your nearest branch.
+              </p>
+              <p style="color:#555;font-size:14px;margin:0;line-height:1.6;">
+                You are welcome to <strong>rebook</strong> at any time through our online portal.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#f0f4fa;padding:20px 40px;text-align:center;">
+              <p style="margin:0;color:#888;font-size:12px;">
+                &copy; 2026 Appointment Booking System. This is an automated notification.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
