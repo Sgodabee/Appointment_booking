@@ -7,13 +7,7 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 
-/**
- * MapStruct mapper — generates an implementation at compile time.
- * componentModel = "spring" means Spring manages it as a @Component.
- *
- * The idNumber field is explicitly excluded from the response mapping
- * to guarantee the encrypted value is never serialised to clients.
- */
+
 @Mapper(componentModel = "spring")
 public interface AppointmentMapper {
 

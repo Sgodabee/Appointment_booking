@@ -13,19 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-/**
- * AES-256-CBC symmetric encryption service.
- *
- * Security design:
- *  - A fresh random 16-byte IV is generated for every encryption call.
- *    The same plaintext produces a different ciphertext each time,
- *    preventing frequency analysis.
- *  - The IV is prepended (hex-encoded) to the stored value, separated by ":".
- *    Format: "ivHex:base64Ciphertext"
- *  - The key is sourced from {@code app.encryption.key} and trimmed to 32 bytes.
- *    Validated at startup via {@link AppProperties}.
- *  - Uses JDK's built-in javax.crypto — no third-party crypto library needed.
- */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -39,12 +27,7 @@ public class EncryptionService {
     private final AppProperties appProperties;
     private final SecureRandom  secureRandom = new SecureRandom();
 
-    /**
-     * Encrypt a plaintext string.
-     *
-     * @param plaintext the value to encrypt (e.g. a SA ID number)
-     * @return "ivHex:base64Ciphertext", or {@code null} if input is null/blank
-     */
+
     public String encrypt(String plaintext) {
         if (plaintext == null || plaintext.isBlank()) {
             return null;
@@ -70,12 +53,7 @@ public class EncryptionService {
         }
     }
 
-    /**
-     * Decrypt a value produced by {@link #encrypt}.
-     *
-     * @param encryptedValue "ivHex:base64Ciphertext"
-     * @return original plaintext, or {@code null} if input is null/blank
-     */
+
     public String decrypt(String encryptedValue) {
         if (encryptedValue == null || encryptedValue.isBlank()) {
             return null;

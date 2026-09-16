@@ -4,6 +4,7 @@ import com.appointmentbooking.config.AppProperties;
 import com.appointmentbooking.domain.model.Appointment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -14,19 +15,7 @@ import org.thymeleaf.context.Context;
 import jakarta.mail.internet.MimeMessage;
 import java.time.format.DateTimeFormatter;
 
-/**
- * EmailService — simulated confirmation emails via Nodemailer Ethereal equivalent.
- *
- * In dev/test: Spring Boot auto-configures a JavaMailSender pointing at
- *   smtp.ethereal.email (fake SMTP — accepts all mail, never delivers it).
- *   The Ethereal preview URL is logged for inspection.
- *
- * In production: provide real SMTP credentials via env vars.
- *
- * @Async ensures email sending never blocks the HTTP response thread.
- * If sending fails, the error is logged but the booking is NOT rolled back
- * (email failure must not cause a booking failure).
- */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -35,6 +24,10 @@ public class EmailService {
     private final JavaMailSender   mailSender;
     private final TemplateEngine   templateEngine;
     private final AppProperties    appProperties;
+
+    /** Authenticated SMTP account — used as the From address when none is configured. */
+    @Value("${spring.mail.username:}")
+    private String mailUsername;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
@@ -144,10 +137,18 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(
-                appProperties.getEmail().getFrom(),
-                appProperties.getEmail().getFromName()
-            );
+            String from = appProperties.getEmail().getFrom();
+            if (from == null || from.isBlank()) {
+                from = mailUsername;   // fall back to the authenticated SMTP account
+            }
+            if (from == null || from.isBlank()) {
+                log.error("SMTP send skipped: no From address configured "
+                        + "(set app.email.from / EMAIL_FROM or spring.mail.username / SMTP_USER). "
+                        + "subject='{}' to='{}'", subject, to);
+                return;
+            }
+
+            helper.setFrom(from, appProperties.getEmail().getFromName());
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(html, true);

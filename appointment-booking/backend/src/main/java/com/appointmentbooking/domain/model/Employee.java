@@ -7,14 +7,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
 
-/**
- * Represents a Capitec branch employee who can access the admin dashboard.
- *
- * Security notes:
- *  - {@code passwordHash} is a bcrypt hash (cost 10). Never returned in API responses.
- *  - {@code username} is the login identifier (e.g. employee number or email).
- *  - {@code role} is stored for future role-based access control (EMPLOYEE, MANAGER, etc.)
- */
+
 @Entity
 @Table(
     name = "employees",

@@ -12,16 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/**
- * Runs once on application startup to ensure the seed customers
- * have correctly encrypted id_number_encrypted values and valid
- * id_number_hash + pin_hash values.
- *
- * Safe to run repeatedly — uses upsert-style logic (skips if already correct).
- *
- * In production, remove this seeder and register customers through
- * a proper onboarding process.
- */
+
 @Slf4j
 @Component
 @RequiredArgsConstructor

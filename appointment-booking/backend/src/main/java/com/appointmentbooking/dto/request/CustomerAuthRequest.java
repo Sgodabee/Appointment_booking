@@ -5,12 +5,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-/**
- * Request body for POST /api/v1/customers/authenticate.
- *
- * Accepts a plain SA ID number and a plain PIN.
- * Neither value is logged or persisted in plain form.
- */
+
 @Data
 public class CustomerAuthRequest {
 

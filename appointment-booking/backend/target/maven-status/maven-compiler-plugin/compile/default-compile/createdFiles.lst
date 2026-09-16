@@ -43,6 +43,7 @@ com\appointmentbooking\config\AppProperties$Cors.class
 com\appointmentbooking\domain\model\Branch.class
 com\appointmentbooking\config\AppProperties.class
 com\appointmentbooking\domain\enums\AppointmentStatus.class
+com\appointmentbooking\config\OpenApiConfig.class
 com\appointmentbooking\dto\request\UpdateStatusRequest.class
 com\appointmentbooking\util\EncryptionService.class
 com\appointmentbooking\dto\response\BranchResponse$BranchResponseBuilder.class

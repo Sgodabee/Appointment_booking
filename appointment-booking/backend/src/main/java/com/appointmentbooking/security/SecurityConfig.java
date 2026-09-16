@@ -20,23 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Spring Security configuration.
- *
- * For this evaluation submission the API is stateless and all endpoints
- * are publicly accessible (no JWT auth required). In a production system
- * the /admin/** endpoints would require an ADMIN role.
- *
- * Security headers applied:
- *   - X-Content-Type-Options: nosniff
- *   - X-Frame-Options: DENY
- *   - X-XSS-Protection: 1; mode=block
- *   - Referrer-Policy: strict-origin-when-cross-origin
- *   - Cache-Control: no-cache (for API responses)
- *
- * CSRF disabled — REST API (stateless, no cookies).
- * Session creation: STATELESS.
- */
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor

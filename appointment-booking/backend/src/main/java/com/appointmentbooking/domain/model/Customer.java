@@ -7,19 +7,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
 
-/**
- * Represents a registered Capitec customer who can sign in to pre-fill
- * their details on the appointment booking form.
- *
- * Security notes:
- *  - {@code idNumberHash}      — SHA-256 hex of the plain ID. Used only for
- *                                 fast lookup. Never exposed in API responses.
- *  - {@code idNumberEncrypted} — AES-256-CBC encrypted ID (same scheme as
- *                                 Appointment.idNumber). Decrypted only to
- *                                 populate the booking form client-side.
- *  - {@code pinHash}           — bcrypt hash of the 5-digit remote PIN.
- *                                 Verified via PasswordEncoder; never returned.
- */
+
 @Entity
 @Table(
     name = "customers",

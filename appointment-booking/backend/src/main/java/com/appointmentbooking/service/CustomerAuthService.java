@@ -16,20 +16,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
-/**
- * Handles customer authentication for the appointment booking sign-in flow.
- *
- * Authentication steps:
- *  1. Hash the incoming plain ID number with SHA-256.
- *  2. Look up the customer record by that hash.
- *  3. Verify the incoming plain PIN against the stored bcrypt hash.
- *  4. Decrypt the stored encrypted ID number for form pre-fill.
- *  5. Return a safe profile DTO (no hashes, no encrypted blobs).
- *
- * Timing note: we always run bcrypt verify even when the customer is not
- * found (using a dummy hash) so response time does not leak whether
- * an ID number exists in the database.
- */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor

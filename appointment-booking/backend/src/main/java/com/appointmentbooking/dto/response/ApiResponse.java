@@ -8,10 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-/**
- * Uniform API envelope for all responses.
- * Errors carry a {@code code} field and an optional {@code errors} list.
- */
+
 @Data
 @Builder
 @NoArgsConstructor

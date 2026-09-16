@@ -16,19 +16,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
-/**
- * Sends a reminder email to customers roughly one hour before their
- * appointment begins.
- *
- * The job runs periodically (see {@code app.reminder.*} properties). On each
- * run it selects active, not-yet-reminded appointments whose start time falls
- * within the next hour, dispatches the reminder asynchronously, and flags the
- * appointment as reminded so it is never emailed twice.
- *
- * Appointment date/time are stored as naive local values, so "now" is computed
- * in the configured timezone ({@code app.timezone}) to stay correct regardless
- * of the server's system zone.
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor

@@ -15,18 +15,11 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Centralised exception → HTTP response mapping.
- *
- * Security principle: programming errors (unexpected exceptions) return
- * a generic 500 message — stack traces and internal details are NEVER
- * exposed to clients. They are only written to server-side logs.
- */
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // ── Bean Validation failures ─────────────────────────────────────────────
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
         List<ApiResponse.FieldError> errors = ex.getBindingResult()
@@ -40,7 +33,6 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("VALIDATION_ERROR", "Validation failed", errors));
     }
 
-    // ── Not found ────────────────────────────────────────────────────────────
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
         return ResponseEntity

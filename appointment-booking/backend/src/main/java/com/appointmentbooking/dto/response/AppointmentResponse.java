@@ -12,11 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 
-/**
- * Public appointment representation returned to clients.
- * The encrypted idNumber field is intentionally excluded —
- * it must never be returned in any API response.
- */
+
 @Data
 @Builder
 @NoArgsConstructor

@@ -9,11 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * All queries use JPQL named parameters (:param) — never string concatenation.
- * Spring Data JPA translates these to parameterized PreparedStatements,
- * making SQL injection structurally impossible.
- */
+
 @Repository
 public interface BranchRepository extends JpaRepository<Branch, Long> {
 

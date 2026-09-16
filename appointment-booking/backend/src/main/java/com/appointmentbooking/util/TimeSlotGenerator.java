@@ -10,15 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Generates 30-minute appointment slots for a given day,
- * excluding already-taken times.
- *
- * Operating hours:
- *   Monday–Friday : 08:00 – 17:00  (18 slots)
- *   Saturday      : 09:00 – 13:00  (8 slots)
- *   Sunday        : closed          (0 slots)
- */
+
 @Component
 public class TimeSlotGenerator {
 

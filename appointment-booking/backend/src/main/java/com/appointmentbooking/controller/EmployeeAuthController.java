@@ -12,12 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * POST /api/v1/auth/employee/login
- *   Body:  { "username": "...", "password": "..." }
- *   200:   { success: true, data: { id, username, fullName, role } }
- *   404:   { success: false, message: "Invalid username or password." }
- */
+
 @RestController
 @RequestMapping("/api/v1/auth/employee")
 @RequiredArgsConstructor

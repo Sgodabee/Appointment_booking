@@ -10,17 +10,10 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-/**
- * Seeds default employee accounts on first boot.
- * Safe to run repeatedly — skips if username already exists.
- *
- * Default credentials (change in production):
- *   username: admin        password: Admin@1234
- *   username: branch.staff password: Staff@1234
- */
+
 @Slf4j
 @Component
-@Order(2)   // run after CustomerSeeder (Order 1 default)
+@Order(2)
 @RequiredArgsConstructor
 public class EmployeeSeeder implements ApplicationRunner {
 

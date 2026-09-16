@@ -10,12 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-/**
- * Handles employee authentication for admin dashboard access.
- *
- * Uses constant-time bcrypt verification regardless of whether the
- * username exists — prevents timing-based username enumeration.
- */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor

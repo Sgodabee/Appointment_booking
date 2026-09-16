@@ -16,14 +16,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * AppointmentRepository
- *
- * SECURITY: Every query uses JPQL named parameters (:param).
- * No native SQL with string interpolation is used anywhere.
- * Spring Data JPA compiles these to PreparedStatements — SQL injection
- * is structurally impossible regardless of what values are passed.
- */
+
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
 
@@ -32,12 +25,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @Query("SELECT a FROM Appointment a JOIN FETCH a.branch WHERE a.referenceNumber = :ref")
     Optional<Appointment> findByReferenceNumber(@Param("ref") String referenceNumber);
 
-    // ── Slot availability ──────────────────────────────────────────────────
 
-    /**
-     * Returns all non-cancelled appointment times for a branch on a date.
-     * Used to build the list of taken slots before generating available ones.
-     */
     @Query("""
         SELECT a.appointmentTime FROM Appointment a
         WHERE a.branch.id = :branchId
