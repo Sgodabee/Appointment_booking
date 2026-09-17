@@ -1,32 +1,5 @@
 import { Link } from 'react-router-dom';
 
-const features = [
-  {
-    icon: '📅',
-    title: 'Easy Booking',
-    desc: 'Choose your branch, service, date and time in under 2 minutes.',
-    color: 'bg-blue-50 text-blue-600',
-  },
-  {
-    icon: '🔒',
-    title: 'Secure & Private',
-    desc: 'Your ID and personal details are encrypted with AES-256 before storage.',
-    color: 'bg-green-50 text-green-600',
-  },
-  {
-    icon: '📧',
-    title: 'Instant Confirmation',
-    desc: 'Receive a confirmation email the moment your booking is complete.',
-    color: 'bg-amber-50 text-amber-600',
-  },
-  {
-    icon: '📱',
-    title: 'Mobile Friendly',
-    desc: 'Fully optimised for any screen — phone, tablet, or desktop.',
-    color: 'bg-purple-50 text-purple-600',
-  },
-];
-
 const services = [
   { icon: '🏦', label: 'Account Opening',      color: 'hover:border-blue-300   hover:bg-blue-50'   },
   { icon: '💳', label: 'Card Services',         color: 'hover:border-green-300  hover:bg-green-50'  },
@@ -113,20 +86,7 @@ export default function HomePage() {
               >
                 Look Up My Appointment
               </Link>
-            </div>
 
-            {/* Trust badges */}
-            <div className="flex flex-wrap items-center gap-5 mt-10">
-              {[
-                { icon: '🔒', text: 'AES-256 Encrypted' },
-                { icon: '⚡', text: 'Instant Confirmation' },
-                { icon: '🆓', text: 'Free to Use' },
-              ].map(({ icon, text }) => (
-                <div key={text} className="flex items-center gap-1.5 text-white/60 text-sm">
-                  <span>{icon}</span>
-                  <span>{text}</span>
-                </div>
-              ))}
             </div>
           </div>
         </div>
@@ -137,40 +97,6 @@ export default function HomePage() {
             <path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z"
               fill="#f9fafb" />
           </svg>
-        </div>
-      </section>
-
-      {/* ─── Features ──────────────────────────────────────────────────────── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20">
-        <div className="text-center mb-12">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full
-            text-xs font-bold tracking-widest uppercase
-            bg-brand-50 text-brand-600 border border-brand-100 mb-4">
-            Why Choose Us
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mt-3">
-            Built around your experience
-          </h2>
-          <p className="text-gray-500 mt-3 max-w-lg mx-auto">
-            Everything you need to book a branch visit with confidence.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map(({ icon, title, desc, color }) => (
-            <div
-              key={title}
-              className="card p-6 hover:shadow-card-hover hover:-translate-y-1
-                         transition-all duration-300 group"
-            >
-              <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center
-                               text-2xl mb-5 group-hover:scale-110 transition-transform duration-300`}>
-                {icon}
-              </div>
-              <h3 className="font-bold text-gray-900 mb-2">{title}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
-            </div>
-          ))}
         </div>
       </section>
 
