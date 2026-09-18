@@ -9,7 +9,7 @@ import Badge from '../components/ui/Badge';
 import Spinner from '../components/ui/Spinner';
 import Alert from '../components/ui/Alert';
 
-const STATUS_OPTIONS = ['', 'PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO_SHOW'];
+const STATUS_OPTIONS = ['', 'PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO_SHOW', 'EXPIRED'];
 const STATUS_LABELS  = {
   '':          'All Statuses',
   PENDING:     'Pending',
@@ -17,10 +17,11 @@ const STATUS_LABELS  = {
   CANCELLED:   'Cancelled',
   COMPLETED:   'Completed',
   NO_SHOW:     'No Show',
+  EXPIRED:     'Expired',
 };
 
 // These statuses are final — no further changes are allowed
-const TERMINAL_STATUSES = new Set(['COMPLETED', 'CANCELLED']);
+const TERMINAL_STATUSES = new Set(['COMPLETED', 'CANCELLED', 'EXPIRED']);
 
 const STATUS_COLORS = {
   CONFIRMED:  'bg-green-100 text-green-800 border-green-200',
@@ -28,6 +29,7 @@ const STATUS_COLORS = {
   CANCELLED:  'bg-red-100 text-red-800 border-red-200',
   COMPLETED:  'bg-blue-100 text-blue-800 border-blue-200',
   NO_SHOW:    'bg-gray-100 text-gray-600 border-gray-200',
+  EXPIRED:    'bg-orange-100 text-orange-700 border-orange-200',
 };
 
 export default function AdminPage() {
@@ -58,8 +60,13 @@ export default function AdminPage() {
         Object.entries(filters).filter(([, v]) => v !== '' && v !== null)
       );
       const res = await listAppointments(params);
-      setAppointments(res.data || []);
-      setPagination(res.pagination || { total: 0, page: 1, totalPages: 1 });
+      // res.data is now PagedResponse<AppointmentResponse>: { items, total, page, size, totalPages }
+      setAppointments(res.data?.items || []);
+      setPagination({
+        total:      res.data?.total      ?? 0,
+        page:       res.data?.page       ?? 1,
+        totalPages: res.data?.totalPages ?? 1,
+      });
     } catch (err) {
       setError(err.message || 'Failed to load appointments.');
     } finally {
@@ -165,7 +172,8 @@ export default function AdminPage() {
           { label: 'Pending',    key: 'PENDING',    icon: '⏳', color: 'border-yellow-200 bg-yellow-50' },
           { label: 'Cancelled',  key: 'CANCELLED',  icon: '❌', color: 'border-red-200 bg-red-50' },
           { label: 'Completed',  key: 'COMPLETED',  icon: '🏁', color: 'border-blue-200 bg-blue-50' },
-          { label: 'No Show',    key: 'NO_SHOW',    icon: '👻', color: 'border-gray-200 bg-gray-50' },
+          { label: 'No Show',    key: 'NO_SHOW',    icon: '👻', color: 'border-gray-200 bg-gray-50'   },
+          { label: 'Expired',    key: 'EXPIRED',    icon: '⏰', color: 'border-orange-200 bg-orange-50' },
         ].map(({ label, key, icon, color }) => (
           <button
             key={key}
@@ -419,25 +427,128 @@ export default function AdminPage() {
             </div>
 
             {/* Pagination */}
-            {pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between mt-5 text-sm">
-                <p className="text-gray-500">
-                  Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
-                </p>
-                <div className="flex gap-2">
+            {pagination.totalPages >= 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+
+                {/* Left: summary + page size */}
+                <div className="flex items-center gap-3 text-sm text-gray-500">
+                  <span>
+                    Showing{' '}
+                    <strong className="text-gray-700">
+                      {Math.min((pagination.page - 1) * filters.size + 1, pagination.total)}
+                      –
+                      {Math.min(pagination.page * filters.size, pagination.total)}
+                    </strong>
+                    {' '}of{' '}
+                    <strong className="text-gray-700">{pagination.total}</strong>
+                  </span>
+                  <select
+                    className="form-input text-xs py-1.5 w-20"
+                    value={filters.size}
+                    onChange={(e) => handleFilterChange('size', Number(e.target.value))}
+                    aria-label="Rows per page"
+                  >
+                    {[10, 15, 25, 50].map((n) => (
+                      <option key={n} value={n}>{n} / page</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Right: page buttons */}
+                <div className="flex items-center gap-1">
+
+                  {/* First */}
+                  <button
+                    onClick={() => handleFilterChange('page', 1)}
+                    disabled={pagination.page <= 1}
+                    className="btn-secondary py-1.5 px-2.5 disabled:opacity-30 text-xs"
+                    aria-label="First page"
+                  >
+                    «
+                  </button>
+
+                  {/* Prev */}
                   <button
                     onClick={() => handleFilterChange('page', pagination.page - 1)}
                     disabled={pagination.page <= 1}
-                    className="btn-secondary py-1.5 px-3 disabled:opacity-40"
+                    className="btn-secondary py-1.5 px-3 disabled:opacity-30 text-xs"
+                    aria-label="Previous page"
                   >
-                    ← Prev
+                    ‹ Prev
                   </button>
+
+                  {/* Numbered pages */}
+                  {(() => {
+                    const total   = pagination.totalPages;
+                    const current = pagination.page;
+                    const delta   = 2; // pages shown either side of current
+                    const pages   = [];
+
+                    let start = Math.max(1, current - delta);
+                    let end   = Math.min(total, current + delta);
+
+                    // Always show at least 5 buttons when possible
+                    if (end - start < delta * 2) {
+                      if (start === 1) end   = Math.min(total, start + delta * 2);
+                      else             start = Math.max(1,     end   - delta * 2);
+                    }
+
+                    if (start > 1) {
+                      pages.push(1);
+                      if (start > 2) pages.push('…');
+                    }
+
+                    for (let p = start; p <= end; p++) pages.push(p);
+
+                    if (end < total) {
+                      if (end < total - 1) pages.push('…');
+                      pages.push(total);
+                    }
+
+                    return pages.map((p, i) =>
+                      p === '…' ? (
+                        <span key={`ellipsis-${i}`} className="px-2 text-gray-400 text-sm select-none">
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={p}
+                          onClick={() => handleFilterChange('page', p)}
+                          className={`py-1.5 px-3 rounded-xl text-xs font-semibold transition-all border
+                            ${p === current
+                              ? 'text-white border-brand-500 shadow-sm'
+                              : 'btn-secondary'
+                            }`}
+                          style={p === current
+                            ? { background: 'linear-gradient(135deg,#005A9C,#0070bf)' }
+                            : {}}
+                          aria-label={`Page ${p}`}
+                          aria-current={p === current ? 'page' : undefined}
+                        >
+                          {p}
+                        </button>
+                      )
+                    );
+                  })()}
+
+                  {/* Next */}
                   <button
                     onClick={() => handleFilterChange('page', pagination.page + 1)}
                     disabled={pagination.page >= pagination.totalPages}
-                    className="btn-secondary py-1.5 px-3 disabled:opacity-40"
+                    className="btn-secondary py-1.5 px-3 disabled:opacity-30 text-xs"
+                    aria-label="Next page"
                   >
-                    Next →
+                    Next ›
+                  </button>
+
+                  {/* Last */}
+                  <button
+                    onClick={() => handleFilterChange('page', pagination.totalPages)}
+                    disabled={pagination.page >= pagination.totalPages}
+                    className="btn-secondary py-1.5 px-2.5 disabled:opacity-30 text-xs"
+                    aria-label="Last page"
+                  >
+                    »
                   </button>
                 </div>
               </div>

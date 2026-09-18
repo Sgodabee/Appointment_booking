@@ -1,52 +1,56 @@
 import { createContext, useContext, useState, useCallback } from 'react';
 import { authenticateCustomer } from '../api/customers';
+import { setAuthToken, clearAuthToken } from '../api/client';
 
 /**
- * AuthContext — holds the currently authenticated Capitec customer.
+ * AuthContext — JWT-backed session for authenticated Capitec customers.
  *
- * login() calls POST /api/v1/customers/authenticate with the plain ID
- * and PIN. The backend verifies against the DB and returns a safe
- * profile DTO for form pre-fill. No credentials are stored in state.
+ * Storage strategy:
+ *  - JWT stored in memory only via setAuthToken() — not in localStorage.
+ *  - Profile (no token) kept in React state only — customer sessions are
+ *    intentionally short-lived (1 hour) and scoped to the booking flow.
+ *  - On logout or page refresh the customer must sign in again (by design —
+ *    the booking form is a single-session action).
+ *
+ * Note: if an employee is also signed in, their token takes priority in the
+ * axios interceptor. Customer auth is only used while completing a booking.
  */
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user,    setUser]    = useState(null);   // null = not logged in
+  const [user,    setUser]    = useState(null);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState('');
 
-  /**
-   * Authenticate a customer against the backend.
-   * Returns { success: true, user } or { success: false, message }.
-   */
   const login = useCallback(async (idNumber, pin) => {
     setLoading(true);
     setError('');
 
     try {
+      // response shape: ApiResponse { success, data: AuthTokenResponse { token, tokenType, expiresIn, profile } }
       const response = await authenticateCustomer(idNumber.trim(), pin.trim());
 
-      // axios interceptor unwraps response.data, so response = ApiResponse body
-      // ApiResponse shape: { success, message, data: CustomerProfileResponse }
-      const profile = {
-        customerName:  response.data.customerName,
-        customerEmail: response.data.customerEmail,
-        customerPhone: response.data.customerPhone,
-        idNumber:      response.data.idNumber,
+      const { token, profile } = response.data;
+
+      const customerProfile = {
+        customerName:  profile.customerName,
+        customerEmail: profile.customerEmail,
+        customerPhone: profile.customerPhone,
+        idNumber:      profile.idNumber,
       };
 
-      setUser(profile);
-      return { success: true, user: profile };
+      // Arm axios interceptor — replaces any existing token
+      setAuthToken(token);
+
+      setUser(customerProfile);
+      return { success: true, user: customerProfile };
 
     } catch (err) {
-      // err is shaped by the axios response interceptor in client.js:
-      // { status, code, message, errors }
       const msg =
         err.status === 404 || err.status === 401
           ? 'ID number or PIN is incorrect. Please try again.'
           : err.message || 'Sign-in failed. Please try again.';
-
       setError(msg);
       return { success: false, message: msg };
 
@@ -56,6 +60,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
+    clearAuthToken();
     setUser(null);
     setError('');
   }, []);

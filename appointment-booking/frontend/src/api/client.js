@@ -10,44 +10,62 @@ const client = axios.create({
   withCredentials: false,
 });
 
-// ─── Request interceptor ───────────────────────────────────────────────────────
+// ─── In-memory token store ─────────────────────────────────────────────────
+// Stored in a closure — never in localStorage (XSS risk).
+// Both EmployeeAuthContext and AuthContext call setAuthToken() after login
+// and clearAuthToken() on logout.
+let _token = null;
+
+export const setAuthToken   = (token) => { _token = token; };
+export const clearAuthToken = ()      => { _token = null;  };
+export const getAuthToken   = ()      => _token;
+
+// ─── Request interceptor ──────────────────────────────────────────────────
 client.interceptors.request.use(
   (config) => {
-    // Attach a per-request ID for traceability
     config.headers['X-Request-ID'] = crypto.randomUUID();
+    if (_token) {
+      config.headers['Authorization'] = `Bearer ${_token}`;
+    }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// ─── Response interceptor ──────────────────────────────────────────────────────
+// ─── Response interceptor ─────────────────────────────────────────────────
 client.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (!error.response) {
-      // Network error / timeout
       toast.error('Cannot reach the server. Please check your connection.');
       return Promise.reject(new Error('Network error'));
     }
 
     const { status, data } = error.response;
 
-    // 429 Rate limited
+    if (status === 401) {
+      // Token expired or invalid — clear it so the UI redirects to login
+      clearAuthToken();
+      toast.error('Your session has expired. Please sign in again.');
+    }
+
+    if (status === 403) {
+      toast.error('You do not have permission to perform this action.');
+    }
+
     if (status === 429) {
       toast.error('Too many requests. Please wait a moment and try again.');
     }
 
-    // 500+ — don't expose backend details
     if (status >= 500) {
       toast.error('Something went wrong on our end. Please try again later.');
     }
 
-    // Return structured error for callers to handle specifically
     return Promise.reject({
       status,
-      code: data?.code,
+      code:    data?.code,
       message: data?.message || 'An error occurred',
-      errors: data?.errors || [],
+      errors:  data?.errors  || [],
     });
   }
 );

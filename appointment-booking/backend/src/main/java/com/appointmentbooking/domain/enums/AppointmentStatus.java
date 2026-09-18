@@ -7,8 +7,15 @@ public enum AppointmentStatus {
     CONFIRMED,
     CANCELLED,
     COMPLETED,
-    NO_SHOW;
+    NO_SHOW,
 
+    /**
+     * Automatically assigned by the nightly expiry scheduler when an appointment
+     * date has passed and the status was never updated from PENDING or CONFIRMED.
+     * This is a terminal state — no further transitions are allowed and no
+     * notification email is sent.
+     */
+    EXPIRED;
 
     @JsonCreator
     public static AppointmentStatus fromString(String value) {

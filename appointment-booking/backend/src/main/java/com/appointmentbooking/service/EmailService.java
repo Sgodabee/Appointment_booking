@@ -107,8 +107,20 @@ public class EmailService {
         }
     }
 
-    @Async
-    public void sendReminder(Appointment appointment) {
+    /**
+     * Send a reminder email synchronously and return whether it succeeded.
+     *
+     * <p>Unlike the other send methods this is intentionally NOT {@code @Async}.
+     * The scheduler must know whether the email was actually delivered before
+     * deciding to mark {@code reminder_sent = true} on the appointment.
+     * Marking it sent on a fire-and-forget basis would permanently suppress
+     * the reminder even if the SMTP send failed or was delayed.
+     *
+     * @param appointment the appointment to remind the customer about
+     * @return {@code true} if the email was handed off to the SMTP server
+     *         successfully; {@code false} if any exception occurred
+     */
+    public boolean sendReminder(Appointment appointment) {
         try {
             Context ctx = new Context();
             ctx.setVariable("customerName",    appointment.getCustomerName());
@@ -126,12 +138,23 @@ public class EmailService {
                 html
             );
 
+            return true;
+
         } catch (Exception e) {
             log.error("Failed to send reminder email for reference {}",
                       appointment.getReferenceNumber(), e);
+            return false;
         }
     }
 
+    /**
+     * Build and dispatch a MIME email via the configured JavaMailSender.
+     *
+     * <p>Throws a {@link RuntimeException} on failure so callers that need
+     * to know about delivery problems (e.g. {@link #sendReminder}) can catch
+     * and act on it. Fire-and-forget callers wrapped in try/catch will simply
+     * log the error as before.
+     */
     private void send(String to, String subject, String html) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -139,13 +162,14 @@ public class EmailService {
 
             String from = appProperties.getEmail().getFrom();
             if (from == null || from.isBlank()) {
-                from = mailUsername;   // fall back to the authenticated SMTP account
+                from = mailUsername;
             }
             if (from == null || from.isBlank()) {
-                log.error("SMTP send skipped: no From address configured "
-                        + "(set app.email.from / EMAIL_FROM or spring.mail.username / SMTP_USER). "
-                        + "subject='{}' to='{}'", subject, to);
-                return;
+                String msg = String.format(
+                    "SMTP send skipped: no From address configured. subject='%s' to='%s'",
+                    subject, to);
+                log.error(msg);
+                throw new RuntimeException(msg);
             }
 
             helper.setFrom(from, appProperties.getEmail().getFromName());
@@ -156,9 +180,12 @@ public class EmailService {
             mailSender.send(message);
             log.info("Email sent: subject='{}' to='{}'", subject, to);
 
+        } catch (RuntimeException e) {
+            throw e;   // re-throw so sendReminder() sees the failure
         } catch (Exception e) {
             log.error("SMTP send failed: subject='{}' to='{}' error='{}'",
                       subject, to, e.getMessage());
+            throw new RuntimeException("SMTP send failed: " + e.getMessage(), e);
         }
     }
 }

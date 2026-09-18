@@ -19,6 +19,7 @@ public class AppProperties {
     private Email email = new Email();
     private Cors cors = new Cors();
     private RateLimit rateLimit = new RateLimit();
+    private Jwt jwt = new Jwt();
 
 
     private String timezone = "Africa/Johannesburg";
@@ -45,5 +46,21 @@ public class AppProperties {
     public static class RateLimit {
         private int bookingMax = 10;
         private int bookingWindowMin = 60;
+    }
+
+    @Data
+    public static class Jwt {
+        /**
+         * Base64-encoded HMAC-SHA256 secret. Must be at least 256 bits (32 bytes).
+         * Override via JWT_SECRET env var in production.
+         */
+        @NotBlank
+        private String secret = "Y2hhbmdlbWVpbnByb2R1Y3Rpb25rZXkxMjM0NTY3ODk=";
+
+        /** Employee token validity in seconds. Default: 8 hours. */
+        private long employeeExpirySeconds = 28_800L;
+
+        /** Customer token validity in seconds. Default: 1 hour. */
+        private long customerExpirySeconds = 3_600L;
     }
 }

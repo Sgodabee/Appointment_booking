@@ -1,41 +1,43 @@
 package com.appointmentbooking.service;
 
+import com.appointmentbooking.config.AppProperties;
 import com.appointmentbooking.domain.model.Employee;
 import com.appointmentbooking.dto.request.EmployeeLoginRequest;
+import com.appointmentbooking.dto.response.AuthTokenResponse;
 import com.appointmentbooking.dto.response.EmployeeProfileResponse;
 import com.appointmentbooking.exception.ResourceNotFoundException;
 import com.appointmentbooking.repository.EmployeeRepository;
+import com.appointmentbooking.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmployeeAuthService {
 
-    // Dummy hash for constant-time rejection when username not found.
-    // Pre-computed bcrypt("dummy", cost=10).
     private static final String DUMMY_HASH =
             "$2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNwojr10c3akV.f3ZS6";
 
     private final EmployeeRepository employeeRepository;
     private final PasswordEncoder    passwordEncoder;
+    private final JwtService         jwtService;
+    private final AppProperties      appProperties;
 
     /**
-     * Authenticate an employee and return their profile.
+     * Authenticate an employee, issue a JWT, and return both.
      *
-     * @throws ResourceNotFoundException with a generic message on failure
+     * @throws ResourceNotFoundException on invalid credentials (generic message)
      */
-    public EmployeeProfileResponse login(EmployeeLoginRequest request) {
+    public AuthTokenResponse<EmployeeProfileResponse> login(EmployeeLoginRequest request) {
+
         Employee employee = employeeRepository
                 .findByUsernameAndActiveTrue(request.getUsername().trim().toLowerCase())
                 .orElse(null);
 
-        // Always run bcrypt to prevent timing-based enumeration
-        String hashToVerify = (employee != null) ? employee.getPasswordHash() : DUMMY_HASH;
+        String hashToVerify  = (employee != null) ? employee.getPasswordHash() : DUMMY_HASH;
         boolean passwordValid = passwordEncoder.matches(request.getPassword(), hashToVerify);
 
         if (employee == null || !passwordValid) {
@@ -45,11 +47,25 @@ public class EmployeeAuthService {
 
         log.info("Employee logged in: id={} username='{}'", employee.getId(), employee.getUsername());
 
-        return EmployeeProfileResponse.builder()
+        String token = jwtService.generateEmployeeToken(
+                employee.getId(),
+                employee.getUsername(),
+                employee.getFullName(),
+                employee.getRole()
+        );
+
+        EmployeeProfileResponse profile = EmployeeProfileResponse.builder()
                 .id(employee.getId())
                 .username(employee.getUsername())
                 .fullName(employee.getFullName())
                 .role(employee.getRole())
+                .build();
+
+        return AuthTokenResponse.<EmployeeProfileResponse>builder()
+                .token(token)
+                .tokenType("Bearer")
+                .expiresIn(appProperties.getJwt().getEmployeeExpirySeconds())
+                .profile(profile)
                 .build();
     }
 }
