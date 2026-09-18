@@ -59,20 +59,39 @@ class AppointmentReminderSchedulerTest {
     }
 
     @Test
-    @DisplayName("sends a reminder for an appointment starting within the next hour")
-    void remindsWithinNextHour() {
+    @DisplayName("sends reminder and marks sent when delivery succeeds")
+    void remindsWithinNextHour_success() {
         Appointment appt = appointmentAt(LocalDateTime.now(ZONE).plusMinutes(30));
         when(appointmentRepository.findRemindable(anyList(), any(LocalDate.class), any(LocalDate.class)))
                 .thenReturn(List.of(appt));
+        // sendReminder now returns boolean — simulate success
+        when(emailService.sendReminder(appt)).thenReturn(true);
 
         scheduler.sendUpcomingReminders();
 
         verify(emailService).sendReminder(appt);
+        // markReminderSent MUST be called when delivery succeeds
         verify(appointmentRepository).markReminderSent(42L);
     }
 
     @Test
-    @DisplayName("does not remind an appointment more than an hour away")
+    @DisplayName("does NOT mark sent when delivery fails — allows retry on next tick")
+    void remindsWithinNextHour_deliveryFailed() {
+        Appointment appt = appointmentAt(LocalDateTime.now(ZONE).plusMinutes(30));
+        when(appointmentRepository.findRemindable(anyList(), any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(List.of(appt));
+        // Simulate SMTP failure
+        when(emailService.sendReminder(appt)).thenReturn(false);
+
+        scheduler.sendUpcomingReminders();
+
+        verify(emailService).sendReminder(appt);
+        // markReminderSent must NOT be called — reminder will be retried next tick
+        verify(appointmentRepository, never()).markReminderSent(any());
+    }
+
+    @Test
+    @DisplayName("skips appointments starting more than one hour away")
     void skipsBeyondOneHour() {
         Appointment appt = appointmentAt(LocalDateTime.now(ZONE).plusHours(3));
         when(appointmentRepository.findRemindable(anyList(), any(LocalDate.class), any(LocalDate.class)))
@@ -85,7 +104,7 @@ class AppointmentReminderSchedulerTest {
     }
 
     @Test
-    @DisplayName("does not remind an appointment that has already started")
+    @DisplayName("skips appointments that have already started")
     void skipsAlreadyStarted() {
         Appointment appt = appointmentAt(LocalDateTime.now(ZONE).minusMinutes(5));
         when(appointmentRepository.findRemindable(anyList(), any(LocalDate.class), any(LocalDate.class)))
@@ -95,5 +114,29 @@ class AppointmentReminderSchedulerTest {
 
         verify(emailService, never()).sendReminder(any());
         verify(appointmentRepository, never()).markReminderSent(any());
+    }
+
+    @Test
+    @DisplayName("processes multiple candidates independently — a failure on one does not skip others")
+    void processesMultipleCandidates() {
+        Appointment appt1 = appointmentAt(LocalDateTime.now(ZONE).plusMinutes(20));
+        Appointment appt2 = Appointment.builder()
+                .id(43L).referenceNumber("APB-TEST-0002")
+                .customerName("Sipho").customerEmail("sipho@example.com")
+                .customerPhone("+27110000001").branch(branch)
+                .serviceType(ServiceType.GENERAL_ENQUIRY)
+                .appointmentDate(LocalDateTime.now(ZONE).plusMinutes(45).toLocalDate())
+                .appointmentTime(LocalDateTime.now(ZONE).plusMinutes(45).toLocalTime())
+                .status(AppointmentStatus.CONFIRMED).build();
+
+        when(appointmentRepository.findRemindable(anyList(), any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(List.of(appt1, appt2));
+        when(emailService.sendReminder(appt1)).thenReturn(false);  // first fails
+        when(emailService.sendReminder(appt2)).thenReturn(true);   // second succeeds
+
+        scheduler.sendUpcomingReminders();
+
+        verify(appointmentRepository, never()).markReminderSent(42L);  // failed — not marked
+        verify(appointmentRepository).markReminderSent(43L);           // succeeded — marked
     }
 }
