@@ -1,5 +1,3 @@
-version: '3.9'
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Appointment Booking System — Full Stack
 #
@@ -69,11 +67,11 @@ services:
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-32charEncryptionKeyForAES256!!!X}
 
       # Email — leave blank for Ethereal (simulated) confirmation
-      SMTP_HOST:       ${SMTP_HOST:-smtp.ethereal.email}
+      SMTP_HOST:       ${SMTP_HOST:-smtp.gmail.com}
       SMTP_PORT:       ${SMTP_PORT:-587}
-      SMTP_USER:       ${SMTP_USER:-}
-      SMTP_PASS:       ${SMTP_PASS:-}
-      EMAIL_FROM:      ${EMAIL_FROM:-noreply@appointmentbooking.co.za}
+      SMTP_USER:       ${SMTP_USER:-vutivim92@gmail.com}
+      SMTP_PASS:       ${SMTP_PASS:-veen ydfy domj nrrh}
+      EMAIL_FROM:      ${EMAIL_FROM:-vutivim92@gmail.com}
       EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Appointment Booking System}
 
       # CORS
