@@ -81,6 +81,7 @@ public class EmailService {
                       appointment.getReferenceNumber(), e);
         }
     }
+    // fixing
 
 
     @Async
