@@ -185,31 +185,5 @@ appointment-booking/
 
 ---
 
-## Database Migrations
 
-Flyway migrations run automatically when the backend starts. They are located in `backend/src/main/resources/db/migration/`:
 
-| Migration | Description |
-|---|---|
-| `V1__initial_schema.sql` | Branches, appointments, audit log tables and seed branches |
-| `V2__customers.sql` | Customers table for booking sign-in |
-| `V3__employees.sql` | Employees table for admin dashboard access |
-| `V4__add_expired_status.sql` | Adds `EXPIRED` to the appointments status check constraint |
-
----
-
-## Environment Variables Reference
-
-| Variable | Default | Description |
-|---|---|---|
-| `DB_PASSWORD` | `postgres` | PostgreSQL password |
-| `JWT_SECRET` | *(dev default)* | Base64-encoded HS256 signing secret (min 32 bytes) |
-| `ENCRYPTION_KEY` | *(dev default)* | AES-256 key for ID number encryption (exactly 32 chars) |
-| `JWT_EMPLOYEE_EXPIRY` | `28800` | Employee token validity in seconds (8 hours) |
-| `JWT_CUSTOMER_EXPIRY` | `3600` | Customer token validity in seconds (1 hour) |
-| `SMTP_HOST` | `smtp.ethereal.email` | SMTP server hostname |
-| `SMTP_PORT` | `587` | SMTP server port |
-| `SMTP_USER` | *(empty)* | SMTP username |
-| `SMTP_PASS` | *(empty)* | SMTP password |
-| `EMAIL_FROM` | `noreply@...` | Sender email address |
-| `CORS_ORIGIN` | `http://localhost:3000` | Allowed CORS origin for the frontend |

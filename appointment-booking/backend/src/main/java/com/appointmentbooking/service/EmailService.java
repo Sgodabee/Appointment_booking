@@ -82,6 +82,7 @@ public class EmailService {
         }
     }
 
+
     @Async
     public void sendCompletion(Appointment appointment) {
         try {
